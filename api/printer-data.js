@@ -1,9 +1,3 @@
-const Datastore = require('nedb');
-const db = new Datastore({
-  filename: 'printers.db',
-  autoload: true
-});
-
 const data = [
   {
     "id": 1,
@@ -31,7 +25,4 @@ const data = [
   }
 ];
 
-db.insert(data, function(error) {
-  if (error) console.log(error);
-  console.log('Sample data loaded!');
-});
+module.exports = data;
