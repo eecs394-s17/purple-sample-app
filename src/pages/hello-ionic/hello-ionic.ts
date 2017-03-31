@@ -18,7 +18,7 @@ export class HelloIonicPage {
     }
 
     loadMap(){
-        let latLng = new google.maps.LatLng(-87.679330, 42.052936);
+        let latLng = new google.maps.LatLng(42.052936, -87.679330);
 
         let mapOptions = {
             center: latLng,
