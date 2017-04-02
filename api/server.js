@@ -7,7 +7,6 @@ server.connection({
   host: '0.0.0.0',
   port: +process.env.PORT,
 });
-server.ext('onPreResponse', addCorsHeaders);
 
 server.route({
   method: 'GET',
@@ -41,3 +40,5 @@ server.start(function(error) {
   if (error) throw error;
   console.log('API server is running at: ', server.info.uri);
 });
+
+server.ext('onPreResponse', addCorsHeaders);
