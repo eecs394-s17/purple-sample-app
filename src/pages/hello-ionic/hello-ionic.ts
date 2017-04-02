@@ -1,5 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
-import { NavController } from 'ionic-angular';
+import { NavController, ModalController } from 'ionic-angular';
+import { ModalContentPage } from './modal-content-page';
+
 
 declare var google;
 
@@ -11,49 +13,27 @@ export class HelloIonicPage {
     @ViewChild('map') mapElement: ElementRef;
     map: any;
 
-    constructor(public navCtrl: NavController) {}
+    constructor(public navCtrl: NavController, public modalCtrl: ModalController) {}
 
     ionViewDidLoad(){
-        this.loadMap();
+        this.getPrinters();
+        this.initMap();
     }
 
     addMarker(location, map) {
     /** Add the marker at the clicked location, and add the next-available label
         from the array of alphabetical characters.*/
+      //iconType:
+      //   0: user
+      //   1: printer
+
       let marker = new google.maps.Marker({
         position: location,
         map: this.map,
+
       });
     return marker;
     }
-
-    // getCurrLoc(infoWindow){
-    //   if (navigator.geolocation) {
-    //         navigator.geolocation.getCurrentPosition(function(position) {
-    //           let pos = {
-    //             lat: position.coords.latitude,
-    //             lng: position.coords.longitude
-    //           };
-    //
-    //           infoWindow.setPosition(pos);
-    //           infoWindow.setContent('Location found.');
-    //           this.map.setCenter(pos);
-    //         }, function() {
-    //           this.handleLocationError(true, infoWindow, this.map.getCenter());
-    //         });
-    //       } else {
-    //         // Browser doesn't support Geolocation
-    //         this.handleLocationError(false, infoWindow, this.map.getCenter());
-    //       }
-    // }
-    //
-    //
-    //   handleLocationError(browserHasGeolocation, infoWindow, pos) {
-    //     infoWindow.setPosition(pos);
-    //     infoWindow.setContent(browserHasGeolocation ?
-    //                           'Error: The Geolocation service failed.' :
-    //                           'Error: Your browser doesn\'t support geolocation.');
-    //   }
 
     handleLocationError(browserHasGeolocation, infoWindow, pos) {
         infoWindow.setPosition(pos);
@@ -62,8 +42,7 @@ export class HelloIonicPage {
                               'Error: Your browser doesn\'t support geolocation.');
     }
 
-    CenterControl(controlDiv, map) {
-
+    createUploadButton(controlDiv, map) {
         // Set CSS for the control border.
         var controlUI = document.createElement('div');
         controlUI.style.backgroundColor = '#fff';
@@ -89,20 +68,31 @@ export class HelloIonicPage {
         controlText.innerHTML = '<span class="drive-helper"></span> <img src="assets/img/drive512.png" id="drive-logo"> Upload';
         controlUI.appendChild(controlText);
 
-        controlUI.addEventListener('click', function() {
-            // click listener here
+        controlUI.addEventListener('click', (event) =>{
+            let modal = this.modalCtrl.create(ModalContentPage);
+            modal.present();
         });
     };
 
-    loadMap(){
+    geoLocalize(latLng, infoWindow){
+      //avoid directing *this* pointer to navigator.geolocation
+      var page_class = this
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+        page_class.map.setCenter(pos);
+        let marker = page_class.addMarker(pos, page_class.map)
+        marker.setMap(page_class.map);
+      },function() {
+          this.handleLocationError(true, infoWindow, this.map.getCenter());
+          let pos = new google.maps.LatLng(42.052936, -87.679330);
+          let marker = page_class.addMarker(pos, page_class.map)
+          marker.setMap(page_class.map);
+        });
+    }
+
+    initMap(){
         let latLng = new google.maps.LatLng(42.052936, -87.679330);
-        // let infoWindow = new google.maps.InfoWindow({map: this.map});
-        // let pos = this.getCurrLoc(infoWindow);
-        // let latLng = new google.maps.LatLng(pos[lat, pos.lng);
-
-        let infoWindow = new google.maps.InfoWindow({map: this.map});
-
-        let marker = this.addMarker(latLng, this.map)
+        let infoWindow = new google.maps.InfoWindow({map:this.map})
         let mapOptions = {
             center: latLng,
             zoom: 15,
@@ -113,23 +103,28 @@ export class HelloIonicPage {
 
         this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
 
-        var centerControlDiv = document.createElement('div');
-        this.CenterControl(centerControlDiv, this.map);
-        this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(centerControlDiv);
+        var uploadDiv = document.createElement('div');
+        this.createUploadButton(uploadDiv, this.map);
+        this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(uploadDiv);
 
         if (navigator.geolocation) {
-          navigator.geolocation.getCurrentPosition(function(position) {
-            var pos = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            };
-            // this.map.setCenter(new google.maps.LatLng(pos.lat, pos.lng));
-          },function() {
-              this.handleLocationError(true, infoWindow, this.map.getCenter());
-            });
-          }
-
-
-        marker.setMap(this.map);
+          // geoLocalize will center the map and return the center position
+          this.geoLocalize(latLng,infoWindow)
+          infoWindow.getPosition()
+        }
     }
-  }
+
+    getPrinters(){ 
+        fetch('https://purple-print-share.herokuapp.com/printers/active', 
+            {headers:
+                {'Access-Control-Allow-Origin': "*"}
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(json) {
+                console.log(json);
+            });
+    }
+            
+}
