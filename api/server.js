@@ -41,4 +41,4 @@ server.start(function(error) {
   console.log('API server is running at: ', server.info.uri);
 });
 
-server.ext('onPreResponse', addCorsHeaders);
+server.ext('onPreResponse', corsHeaders);
