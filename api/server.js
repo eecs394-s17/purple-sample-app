@@ -1,14 +1,13 @@
 const Hapi = require('hapi');
 const server = new Hapi.Server();
 const printers = require('./printer-data.js');
+const corsHeaders = require('hapi-cors-headers');
 
 server.connection({
   host: '0.0.0.0',
   port: +process.env.PORT,
-  routes: { cors: {
-    origin: ['*']
-  }},
 });
+server.ext('onPreResponse', addCorsHeaders);
 
 server.route({
   method: 'GET',
