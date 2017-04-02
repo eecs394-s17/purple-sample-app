@@ -5,6 +5,9 @@ const printers = require('./printer-data.js');
 server.connection({
   host: '0.0.0.0',
   port: +process.env.PORT,
+  routes: { cors: {
+    origin: ['*']
+  }},
 });
 
 server.route({
