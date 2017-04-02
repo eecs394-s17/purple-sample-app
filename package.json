@@ -4,6 +4,7 @@
   "homepage": "http://ionicframework.com/",
   "private": true,
   "scripts": {
+    "start": "node api/server.js",
     "clean": "ionic-app-scripts clean",
     "build": "ionic-app-scripts build",
     "ionic:build": "ionic-app-scripts build",
@@ -23,14 +24,18 @@
     "@ionic-native/splash-screen": "3.1.0",
     "@ionic-native/status-bar": "3.1.0",
     "@ionic/storage": "2.0.0",
+    "hapi": "^16.1.1",
     "ionic-angular": "2.3.0",
     "ionicons": "3.0.0",
+    "node-fetch": "^1.6.3",
     "rxjs": "5.0.1",
     "sw-toolbox": "3.4.0",
+    "whatwg-fetch": "^2.0.3",
     "zone.js": "0.7.2"
   },
   "devDependencies": {
     "@ionic/app-scripts": "1.1.4",
+    "@types/whatwg-fetch": "0.0.33",
     "typescript": "2.0.9"
   },
   "cordovaPlugins": [

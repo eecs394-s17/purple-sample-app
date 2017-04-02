@@ -1,7 +1,7 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { NavController, ModalController } from 'ionic-angular';
-
 import { ModalContentPage } from './modal-content-page';
+
 
 declare var google;
 
@@ -16,22 +16,30 @@ export class HelloIonicPage {
     constructor(public navCtrl: NavController, public modalCtrl: ModalController) {}
 
     ionViewDidLoad(){
-        this.loadMap();
+        this.getPrinters();
+        this.initMap();
     }
 
     addMarker(location, map) {
     /** Add the marker at the clicked location, and add the next-available label
         from the array of alphabetical characters.*/
+      //iconType:
+      //   0: user
+      //   1: printer
+
       let marker = new google.maps.Marker({
         position: location,
         map: this.map,
+
       });
     return marker;
     }
 
-    openModal() {
-        let modal = this.modalCtrl.create(ModalContentPage);
-        modal.present();
+    handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
     }
 
     createUploadButton(controlDiv, map) {
@@ -66,10 +74,25 @@ export class HelloIonicPage {
         });
     };
 
-    loadMap(){
-        let latLng = new google.maps.LatLng(42.052936, -87.679330);
+    geoLocalize(latLng, infoWindow){
+      //avoid directing *this* pointer to navigator.geolocation
+      var page_class = this
+      navigator.geolocation.getCurrentPosition(function(position) {
+        var pos = new google.maps.LatLng(position.coords.latitude, position.coords.longitude)
+        page_class.map.setCenter(pos);
+        let marker = page_class.addMarker(pos, page_class.map)
+        marker.setMap(page_class.map);
+      },function() {
+          this.handleLocationError(true, infoWindow, this.map.getCenter());
+          let pos = new google.maps.LatLng(42.052936, -87.679330);
+          let marker = page_class.addMarker(pos, page_class.map)
+          marker.setMap(page_class.map);
+        });
+    }
 
-        let marker = this.addMarker(latLng, this.map)
+    initMap(){
+        let latLng = new google.maps.LatLng(42.052936, -87.679330);
+        let infoWindow = new google.maps.InfoWindow({map:this.map})
         let mapOptions = {
             center: latLng,
             zoom: 15,
@@ -79,11 +102,29 @@ export class HelloIonicPage {
         }
 
         this.map = new google.maps.Map(this.mapElement.nativeElement, mapOptions);
-        marker.setMap(this.map);
 
         var uploadDiv = document.createElement('div');
         this.createUploadButton(uploadDiv, this.map);
         this.map.controls[google.maps.ControlPosition.BOTTOM_CENTER].push(uploadDiv);
+
+        if (navigator.geolocation) {
+          // geoLocalize will center the map and return the center position
+          this.geoLocalize(latLng,infoWindow)
+          infoWindow.getPosition()
+        }
     }
 
+    getPrinters(){ 
+        fetch('https://purple-print-share.herokuapp.com/printers/active', 
+            {headers:
+                {'Access-Control-Allow-Origin': "*"}
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(json) {
+                console.log(json);
+            });
+    }
+            
 }
