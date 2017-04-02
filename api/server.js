@@ -3,8 +3,8 @@ const server = new Hapi.Server();
 const printers = require('./printer-data.js');
 
 server.connection({
-  host: 'localhost',
-  port: '8000',
+  host: '0.0.0.0',
+  port: +process.env.PORT,
 });
 
 server.route({
