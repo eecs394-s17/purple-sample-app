@@ -1,5 +1,6 @@
 import { Component, ViewChild, ElementRef } from '@angular/core';
 import { NavController } from 'ionic-angular';
+//import 'whatwg-fetch';
 
 declare var google;
 
@@ -14,6 +15,7 @@ export class HelloIonicPage {
     constructor(public navCtrl: NavController) {}
 
     ionViewDidLoad(){
+        this.getPrinters();
         this.loadMap();
     }
 
@@ -80,4 +82,17 @@ export class HelloIonicPage {
         marker.setMap(this.map);
     }
 
+    getPrinters(){ 
+        fetch('https://purple-print-share.herokuapp.com/printers/active', 
+            {headers:
+                {'Access-Control-Allow-Origin': "*"}
+            })
+            .then(function(res) {
+                return res.json();
+            })
+            .then(function(json) {
+                console.log(json);
+            });
+    }
+            
 }
